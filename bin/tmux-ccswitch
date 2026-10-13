@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# ccswitch(https://github.com/sglim/ccswitch) 가 깔려 있으면 상태줄에 Claude 계정 사용량 칸을 그린다. 없으면 아무것도 안 낸다.
+# 「#4 14%(4h21m) 80%(2h1m) · 전체 79%」 = 지금 계정 · 5시간 · 주간(괄호는 초기화까지) · 모든 계정 주간 평균.
+# ccswitch 점검 에이전트가 매분 적는 캐시를 읽기만 한다(API 호출 없음). tmux status-right 에서 #() 로 호출.
+cs=$(PATH="$HOME/.local/bin:$PATH" command -v ccswitch-statusbar) || exit 0
+out=$("$cs" --tmux 2>/dev/null) || exit 0
+[ -n "$out" ] || exit 0
+printf '#[fg=#cba6f7,bg=default]█#[fg=#cdd6f4,bg=#313244,push-default] %s #[pop-default]' "$out"

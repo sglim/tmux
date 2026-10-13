@@ -1,0 +1,14 @@
+#!/bin/bash
+# tmux hook (window/pane/session 전환) 에서 호출.
+# 현재 active pane 의 pane_title 을 iTerm2 badge 로 송신 (pane 별 분리).
+
+label=$(tmux display-message -p '#{pane_title}' 2>/dev/null || echo "")
+encoded=$(printf "%s" "$label" | base64 | tr -d '\n')
+
+# client_tty 에 직접 write — tmux 가 받지 않고 iTerm2 까지 직행
+tty=$(tmux display-message -p '#{client_tty}' 2>/dev/null)
+
+if [[ -n "$tty" && -w "$tty" ]]; then
+  # iTerm2 OSC 1337 SetUserVar (BEL 종료)
+  printf '\033]1337;SetUserVar=tmuxBadge=%s\007' "$encoded" > "$tty"
+fi

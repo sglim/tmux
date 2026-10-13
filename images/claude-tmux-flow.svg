@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 364" width="720" height="364" role="img" aria-label="Claude Code hooks call claude-tmux-state, which writes the pane option @claude_state. tmux draws it as window tab dots, a pane title strip and a background tint. Selecting the pane calls the script again and turns done into idle.">
+  <style>
+    .card{fill:#f6f5f0;stroke:#d5d2c7}
+    .box{fill:#ffffff;stroke:#bdb9ad}
+    .t{fill:#282828;font:600 14px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+    .s{fill:#665c54;font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+    .m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .a{stroke:#7c6f64;stroke-width:1.5;fill:none}
+    .ah{fill:#7c6f64}
+    .gy{fill:#d79921}.gr{fill:#cc241d}.gg{fill:#98971a}.ho{fill:none;stroke:#98971a;stroke-width:2}
+    .strip{fill:#b8bb26}.stript{fill:#282828;font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace}
+    @media (prefers-color-scheme: dark){
+      .card{fill:#1d2021;stroke:#3c3836}
+      .box{fill:#282828;stroke:#504945}
+      .t{fill:#ebdbb2}.s{fill:#a89984}
+      .a{stroke:#a89984}.ah{fill:#a89984}
+      .gy{fill:#fabd2f}.gr{fill:#fb4934}.gg{fill:#b8bb26}.ho{stroke:#b8bb26}
+    }
+  </style>
+  <defs>
+    <marker id="h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="ah" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+  <rect class="card" x="1" y="1" width="718" height="362" rx="12"/>
+
+  <!-- row 1: the write path -->
+  <rect class="box" x="20" y="40" width="152" height="64" rx="8"/>
+  <text class="t" x="96" y="66" text-anchor="middle">Claude Code</text>
+  <text class="s" x="96" y="86" text-anchor="middle">session in a tmux pane</text>
+
+  <rect class="box" x="196" y="40" width="152" height="64" rx="8"/>
+  <text class="t" x="272" y="66" text-anchor="middle">Hooks</text>
+  <text class="s" x="272" y="86" text-anchor="middle">async, never block</text>
+
+  <rect class="box" x="372" y="40" width="152" height="64" rx="8"/>
+  <text class="t m" x="448" y="66" text-anchor="middle">claude-tmux-state</text>
+  <text class="s" x="448" y="86" text-anchor="middle">small shell script</text>
+
+  <rect class="box" x="548" y="40" width="152" height="64" rx="8"/>
+  <text class="t m" x="624" y="66" text-anchor="middle">@claude_state</text>
+  <text class="s" x="624" y="86" text-anchor="middle">tmux pane option</text>
+
+  <path class="a" d="M172,72 L194,72" marker-end="url(#h)"/>
+  <path class="a" d="M348,72 L370,72" marker-end="url(#h)"/>
+  <path class="a" d="M524,72 L546,72" marker-end="url(#h)"/>
+
+  <!-- row 2: tmux draws -->
+  <text class="t" x="20" y="186">tmux draws it</text>
+  <text class="s" x="20" y="206">format strings</text>
+
+  <rect class="box" x="196" y="160" width="152" height="64" rx="8"/>
+  <text class="t" x="272" y="184" text-anchor="middle">Window tab</text>
+  <circle class="ho" cx="254" cy="204" r="5"/>
+  <circle class="gy" cx="272" cy="204" r="6"/>
+  <circle class="gr" cx="290" cy="204" r="6"/>
+
+  <rect class="box" x="372" y="160" width="152" height="64" rx="8"/>
+  <text class="t" x="448" y="184" text-anchor="middle">Pane title</text>
+  <rect class="strip" x="404" y="194" width="88" height="18" rx="3"/>
+  <text class="stript" x="448" y="207" text-anchor="middle">● claude</text>
+
+  <rect class="box" x="548" y="160" width="152" height="64" rx="8"/>
+  <text class="t" x="624" y="184" text-anchor="middle">Pane background</text>
+  <text class="s" x="624" y="206" text-anchor="middle">tint on done, blocked</text>
+
+  <path class="a" d="M600,104 L284,158" marker-end="url(#h)"/>
+  <path class="a" d="M612,104 L456,158" marker-end="url(#h)"/>
+  <path class="a" d="M624,104 L624,158" marker-end="url(#h)"/>
+
+  <!-- row 3: seeing it -->
+  <text class="t" x="20" y="306">You look at it</text>
+  <text class="s" x="20" y="326">done goes back to idle</text>
+
+  <rect class="box" x="196" y="280" width="152" height="64" rx="8"/>
+  <text class="t" x="272" y="306" text-anchor="middle">You pick the pane</text>
+  <text class="s" x="272" y="326" text-anchor="middle">window or pane switch</text>
+
+  <rect class="box" x="372" y="280" width="152" height="64" rx="8"/>
+  <text class="t m" x="448" y="306" text-anchor="middle">set-hook [42]</text>
+  <text class="s" x="448" y="326" text-anchor="middle">tmux's own hooks</text>
+
+  <rect class="box" x="548" y="280" width="152" height="64" rx="8"/>
+  <text class="t m" x="624" y="306" text-anchor="middle">… seen %pane</text>
+  <text class="s" x="624" y="326" text-anchor="middle">done → idle</text>
+
+  <path class="a" d="M348,312 L370,312" marker-end="url(#h)"/>
+  <path class="a" d="M524,312 L546,312" marker-end="url(#h)"/>
+  <path class="a" d="M700,312 L710,312 L710,72 L702,72" marker-end="url(#h)"/>
+</svg>

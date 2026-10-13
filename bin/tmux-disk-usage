@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# 디스크 사용률을 색이 입혀진 퍼센트로 출력. tmux status-right 에서 #() 로 호출.
+#
+# ⚠️ macOS(APFS)에서 `df /` 는 읽기전용 시스템 볼륨이라 실제 사용량과 다르다.
+#    예: `df /` 가 68% 인데 데이터 볼륨은 98% (여유 8GB).
+#    그래서 /System/Volumes/Data 를 먼저 보고, 없으면 / 로 폴백한다.
+#
+# 색은 catppuccin mocha 팔레트. 출력 끝에서 값 표시용 fg 로 되돌린다.
+
+readonly FG_RESET='#[fg=#cdd6f4]'
+
+target=/System/Volumes/Data
+[ -d "$target" ] || target=/
+
+# Capacity 컬럼(예: "98%")에서 숫자만. df 실패 시 조용히 빠진다.
+pct=$(df -P "$target" 2>/dev/null | awk 'NR==2 {gsub(/%/,"",$5); print $5}')
+
+if ! [[ "$pct" =~ ^[0-9]+$ ]]; then
+    printf '#[fg=#6c7086]--%s' "$FG_RESET"
+    exit 0
+fi
+
+if   (( pct >= 90 )); then color='#f38ba8'   # red    — 위험
+elif (( pct >= 75 )); then color='#f9e2af'   # yellow — 주의
+else                       color='#a6e3a1'   # green  — 여유
+fi
+
+printf '#[fg=%s]%s%%%s' "$color" "$pct" "$FG_RESET"

@@ -1,0 +1,65 @@
+#!/bin/sh
+# Claude Code 상태줄: 모델명 · 폴더와 git 브랜치 · 컨텍스트가 얼마나 찼는지(claude-hud 를 걷어 낸 자리).
+#   [Opus 5.5] │ motherin git:(main) │ Context ████░░░░░░ 43%
+# 값은 Claude Code 가 stdin JSON 으로 넘겨 주는 model.display_name · workspace.current_dir ·
+# context_window.used_percentage(입력 토큰 기준, 이미 계산된 값).
+# 브랜치는 git 을 띄우지 않고 .git/HEAD 를 직접 읽는다(셸 내장만 — 프로세스 0개). 그래서 HUD 의 「main*」 같은
+# 수정 표시는 없다(git status 를 매번 띄워야 해서 큰 레포에서 비싸다).
+# API 를 부르지 않고, Claude 가 응답을 주고받을 때만 돈다(refreshInterval 없음).
+# 색은 claude-hud 의 컨텍스트 색과 같은 기준: 70% 미만 초록 · 70~84% 노랑 · 85% 이상 빨강(터미널 테마 색).
+#
+# tmux 안이면 그 pane 의 옵션 @claude_ctx 에도 적는다 — pane 제목 줄이 상태 띠 옆에 「43%」 를 그린다.
+# 값이 바뀔 때만 적고 다시 그린다. 세션이 끝나면 claude-tmux-state off 가 지운다.
+
+# 훅·상태줄은 Claude 의 PATH 로 돈다 — nix·brew 어디에 있든 찾게 흔한 자리를 덧붙인다.
+P="$PATH:$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/opt/homebrew/bin:/usr/local/bin"
+jq=$(PATH="$P" command -v jq) || { echo "Context ?"; exit 0; }
+
+# jq 한 번으로 세 값을 한 줄씩 꺼낸다(모델명·폴더에 공백이 있을 수 있다).
+{ read -r model; read -r dir; read -r pct; } <<JSON
+$("$jq" -r '(.model.display_name // ""), (.workspace.current_dir // .cwd // ""), (.context_window.used_percentage | if . == null then "" else round end)' 2>/dev/null)
+JSON
+
+# git 브랜치: 폴더에서 위로 올라가며 .git 을 찾는다. worktree 면 .git 이 「gitdir: 경로」 파일이다.
+# HEAD 가 「ref: refs/heads/이름」 이면 그 이름, 아니면(detached) 커밋 앞 7자.
+branch=""; d=$dir; g=""
+while [ -n "$d" ]; do
+    if [ -d "$d/.git" ]; then g="$d/.git"; break; fi
+    if [ -f "$d/.git" ]; then
+        read -r _ g < "$d/.git"
+        case $g in /*) ;; *) g="$d/$g" ;; esac
+        break
+    fi
+    d=${d%/*}
+done
+if [ -n "$g" ] && [ -f "$g/HEAD" ] && read -r h < "$g/HEAD"; then
+    case $h in
+        "ref: refs/heads/"*) branch=${h#ref: refs/heads/} ;;
+        *) branch=${h%"${h#???????}"} ;;
+    esac
+fi
+
+head=""; [ -n "$model" ] && head="[$model] │ "
+[ -n "$dir" ] && head="$head${dir##*/}${branch:+ git:($branch)} │ "
+case "$pct" in
+    ''|*[!0-9]*) echo "${head}Context ░░░░░░░░░░ —"; exit 0 ;;
+esac
+
+if [ "$pct" -ge 85 ]; then c=31; elif [ "$pct" -ge 70 ]; then c=33; else c=32; fi
+full=$(( (pct + 5) / 10 )); [ "$full" -gt 10 ] && full=10
+bar=""; i=0
+while [ "$i" -lt 10 ]; do
+    if [ "$i" -lt "$full" ]; then bar="${bar}█"; else bar="${bar}░"; fi
+    i=$(( i + 1 ))
+done
+printf '%sContext \033[%sm%s %s%%\033[0m\n' "$head" "$c" "$bar" "$pct"
+
+if [ -n "$TMUX_PANE" ] && tmux=$(PATH="$P" command -v tmux); then
+    if [ "$("$tmux" display -p -t "$TMUX_PANE" '#{@claude_ctx}' 2>/dev/null)" != "$pct" ]; then
+        "$tmux" set -p -t "$TMUX_PANE" @claude_ctx "$pct" 2>/dev/null
+        "$tmux" list-clients -F '#{client_name}' 2>/dev/null | while read -r cl; do
+            "$tmux" refresh-client -S -t "$cl" 2>/dev/null
+        done
+    fi
+fi
+exit 0

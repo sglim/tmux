@@ -1,0 +1,71 @@
+#!/bin/sh
+# Claude Code 훅 → 이 세션이 도는 tmux pane 에 상태를 적는다(pane 옵션 @claude_state).
+# 상단 상태줄의 창 탭이 pane 마다 동그라미를 그린다:
+#   idle ○초록(대기) · done ●초록(끝났는데 아직 안 봄) · working ●노랑(작업 중)
+#   blocked ●빨강(내 답을 기다림) · off 지움
+#
+#   claude-tmux-state <idle|working|blocked|done|off>   Claude 훅이 부른다(stdin 은 훅 JSON)
+#   claude-tmux-state seen <pane_id>                   tmux 훅이 부른다 — 그 pane 의 done 을 idle 로
+#
+# done 은 「그 pane 을 선택해야 꺼진다」(창에 들어가도 선택된 pane 만). 끝날 때 이미 그 pane 을
+# 보고 있으면 바로 idle 로 둔다.
+# tmux 밖에서 뜬 Claude 면 아무것도 안 한다.
+
+# 훅은 Claude·tmux 의 PATH 로 돈다 — nix·brew 어디에 있든 찾게 흔한 자리를 덧붙인다.
+tmux=$(PATH="$PATH:$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/opt/homebrew/bin:/usr/local/bin" command -v tmux) || exit 0
+
+# done·blocked 인 pane 은 배경을 옅게 칠한다. 색은 tmux 설정의 @claude_tint_<상태>(테마마다 다르다).
+# 그 옵션이 없는 상태면 칠한 것을 걷는다.
+paint() {
+    tint=$("$tmux" show -gqv "@claude_tint_$2" 2>/dev/null)
+    if [ -n "$tint" ]; then
+        "$tmux" set -p -t "$1" window-style "$tint" 2>/dev/null
+        "$tmux" set -p -t "$1" window-active-style "$tint" 2>/dev/null
+    else
+        "$tmux" set -pu -t "$1" window-style 2>/dev/null
+        "$tmux" set -pu -t "$1" window-active-style 2>/dev/null
+    fi
+}
+
+redraw() {
+    "$tmux" list-clients -F '#{client_name}' 2>/dev/null | while read -r c; do
+        "$tmux" refresh-client -S -t "$c" 2>/dev/null
+    done
+}
+
+if [ "$1" = seen ]; then
+    [ -n "$2" ] || exit 0
+    if [ "$("$tmux" display -p -t "$2" '#{@claude_state}' 2>/dev/null)" = done ]; then
+        "$tmux" set -p -t "$2" @claude_state idle 2>/dev/null
+        paint "$2" idle
+        redraw
+    fi
+    exit 0
+fi
+
+input=$(cat)
+[ -n "$TMUX_PANE" ] || exit 0
+state="$1"
+# 선택지 질문(AskUserQuestion)은 내 답을 기다린다. bypass permissions 모드에선 PermissionRequest 가
+# 안 와서 PreToolUse(working)만 오므로 여기서 blocked 로 바꾼다.
+if [ "$state" = working ] &&
+    printf '%s' "$input" | grep -Eq '"hook_event_name"[[:space:]]*:[[:space:]]*"PreToolUse"' &&
+    printf '%s' "$input" | grep -Eq '"tool_name"[[:space:]]*:[[:space:]]*"AskUserQuestion"'; then
+    state=blocked
+fi
+if [ "$state" = done ]; then
+    # 지금 보고 있는 pane(붙은 세션의 현재 창·현재 pane)이면 이미 본 것이다.
+    seen=$("$tmux" display -p -t "$TMUX_PANE" '#{&&:#{session_attached},#{&&:#{window_active},#{pane_active}}}' 2>/dev/null)
+    [ "$seen" = 1 ] && state=idle
+fi
+if [ "$state" = off ]; then
+    "$tmux" set -pu -t "$TMUX_PANE" @claude_state 2>/dev/null
+    # 상태줄(claude-statusline)이 적어 둔 컨텍스트 % 도 지운다 — 제목 줄의 「43%」 가 사라진다.
+    "$tmux" set -pu -t "$TMUX_PANE" @claude_ctx 2>/dev/null
+else
+    "$tmux" set -p -t "$TMUX_PANE" @claude_state "$state" 2>/dev/null
+fi
+paint "$TMUX_PANE" "$state"
+# 상태줄을 바로 다시 그린다(안 하면 status-interval 만큼 늦게 보인다).
+redraw
+exit 0

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 344" width="720" height="344" role="img" aria-label="Table of hook events, the state each one sets, and how the window tab dot and the pane title look for that state.">
+  <style>
+    .card{fill:#f6f5f0;stroke:#d5d2c7}
+    .rule{stroke:#d5d2c7;stroke-width:1}
+    .h{fill:#7c6f64;font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;letter-spacing:.06em}
+    .e{fill:#282828;font:12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .ei{fill:#282828;font:italic 12px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+    .st{fill:#282828;font:600 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .n{fill:#7c6f64;font:11px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+    .tt{fill:#282828;font:12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .gy{fill:#d79921}.gr{fill:#cc241d}.gg{fill:#98971a}.gb{fill:#458588}.ho{fill:none;stroke:#98971a;stroke-width:2}
+    .sy{fill:#fabd2f}.sr{fill:#fb4934}.sg{fill:#b8bb26}
+    .stt{fill:#282828;font:600 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    @media (prefers-color-scheme: dark){
+      .card{fill:#1d2021;stroke:#3c3836}.rule{stroke:#3c3836}
+      .h,.n{fill:#a89984}.e,.ei,.st,.tt{fill:#ebdbb2}
+      .gy{fill:#fabd2f}.gr{fill:#fb4934}.gg{fill:#b8bb26}.gb{fill:#83a598}.ho{stroke:#b8bb26}
+    }
+  </style>
+  <rect class="card" x="1" y="1" width="718" height="342" rx="12"/>
+
+  <text class="h" x="20" y="34">HOOK EVENT</text>
+  <text class="h" x="312" y="34">STATE</text>
+  <text class="h" x="430" y="34">TAB</text>
+  <text class="h" x="540" y="34">PANE TITLE</text>
+  <line class="rule" x1="20" y1="46" x2="700" y2="46"/>
+
+  <!-- 1 idle -->
+  <text class="e" x="20" y="76">SessionStart</text>
+  <text class="st" x="312" y="76">idle</text>
+  <circle class="ho" cx="444" cy="71" r="5.5"/>
+  <circle class="ho" cx="552" cy="71" r="5.5"/>
+  <text class="tt" x="566" y="76">claude</text>
+  <line class="rule" x1="20" y1="92" x2="700" y2="92"/>
+
+  <!-- 2 working -->
+  <text class="e" x="20" y="112">UserPromptSubmit</text>
+  <text class="e" x="20" y="128">PreToolUse · PostToolUse</text>
+  <text class="st" x="312" y="122">working</text>
+  <circle class="gy" cx="444" cy="117" r="6.5"/>
+  <rect class="sy" x="540" y="106" width="96" height="22" rx="3"/>
+  <text class="stt" x="550" y="122">● claude</text>
+  <line class="rule" x1="20" y1="140" x2="700" y2="140"/>
+
+  <!-- 3 blocked -->
+  <text class="e" x="20" y="155">PermissionRequest</text>
+  <text class="e" x="20" y="169">Notification (needs input)</text>
+  <text class="e" x="20" y="183">PreToolUse (AskUserQuestion)</text>
+  <text class="st" x="312" y="164">blocked</text>
+  <text class="n" x="312" y="180">+ background tint</text>
+  <circle class="gr" cx="444" cy="165" r="6.5"/>
+  <rect class="sr" x="540" y="154" width="96" height="22" rx="3"/>
+  <text class="stt" x="550" y="170">● claude</text>
+  <line class="rule" x1="20" y1="188" x2="700" y2="188"/>
+
+  <!-- 4 done -->
+  <text class="e" x="20" y="216">Stop · StopFailure</text>
+  <text class="st" x="312" y="210">done</text>
+  <text class="n" x="312" y="226">+ background tint</text>
+  <circle class="gg" cx="444" cy="211" r="6.5"/>
+  <rect class="sg" x="540" y="200" width="96" height="22" rx="3"/>
+  <text class="stt" x="550" y="216">● claude</text>
+  <line class="rule" x1="20" y1="236" x2="700" y2="236"/>
+
+  <!-- 5 seen -->
+  <text class="ei" x="20" y="256">you select that pane</text>
+  <text class="e" x="20" y="272">tmux hook [42] → seen</text>
+  <text class="st" x="312" y="266">idle</text>
+  <circle class="ho" cx="444" cy="261" r="5.5"/>
+  <circle class="ho" cx="552" cy="261" r="5.5"/>
+  <text class="tt" x="566" y="266">claude</text>
+  <line class="rule" x1="20" y1="284" x2="700" y2="284"/>
+
+  <!-- 6 off -->
+  <text class="e" x="20" y="312">SessionEnd</text>
+  <text class="st" x="312" y="312">off</text>
+  <text class="n" x="430" y="312">no dot</text>
+  <circle class="gb" cx="552" cy="307" r="6"/>
+  <text class="tt" x="566" y="312">shell</text>
+  <text class="n" x="612" y="312">no Claude</text>
+</svg>

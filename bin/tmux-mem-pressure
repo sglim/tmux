@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# macOS 메모리 압력을 색점(●)으로 표시. tmux status-right 에서 #() 로 호출.
+#
+# kern.memorystatus_vm_pressure_level: 1=정상 2=경고 4=위험
+# RAM % 는 회수 가능한 캐시까지 포함해 늘 높게 보인다(16GB 에서 실사용
+# 8.7GB 일 때 57%). "지금 진짜 부족한가"는 이 압력 값이 알려준다.
+#
+# 색은 catppuccin mocha 팔레트. 출력 끝에서 값 표시용 fg 로 되돌린다.
+
+readonly FG_RESET='#[fg=#cdd6f4]'
+
+case "$(/usr/sbin/sysctl -n kern.memorystatus_vm_pressure_level 2>/dev/null)" in
+    1) printf '#[fg=#a6e3a1]●%s' "$FG_RESET" ;;  # green  — 정상
+    2) printf '#[fg=#f9e2af]●%s' "$FG_RESET" ;;  # yellow — 경고
+    4) printf '#[fg=#f38ba8]●%s' "$FG_RESET" ;;  # red    — 위험(스왑)
+    *) printf '#[fg=#6c7086]●%s' "$FG_RESET" ;;  # grey   — 읽기 실패
+esac

@@ -1,0 +1,16 @@
+#!/bin/bash
+# tmux command-prompt 에서 호출되는 wrapper.
+# pane 별 저장소 = pane_title. pane 전환 시 hook 이 자동 복원.
+# Usage: tmux-badge-prompt "label"
+
+label="${1:-}"
+
+# 현재 pane 의 title (= pane 별 badge 저장소)
+tmux select-pane -T "$label"
+
+# iTerm2 로 즉시 송신
+encoded=$(printf "%s" "$label" | base64 | tr -d '\n')
+tty=$(tmux display-message -p '#{client_tty}' 2>/dev/null)
+if [[ -n "$tty" && -w "$tty" ]]; then
+  printf '\033]1337;SetUserVar=tmuxBadge=%s\007' "$encoded" > "$tty"
+fi
