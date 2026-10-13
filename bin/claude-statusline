@@ -39,8 +39,14 @@ if [ -n "$g" ] && [ -f "$g/HEAD" ] && read -r h < "$g/HEAD"; then
     esac
 fi
 
+# 폴더·브랜치 이름은 저장소가 정한다 — 제어 문자(ESC 등)가 섞여 있으면 터미널 제어 코드가 되므로 버린다(셸 내장만).
+name=${dir##*/}
+case $name in *[[:cntrl:]]*) name='?' ;; esac
+case $branch in *[[:cntrl:]]*) branch='?' ;; esac
+case $model in *[[:cntrl:]]*) model='?' ;; esac
+
 head=""; [ -n "$model" ] && head="[$model] │ "
-[ -n "$dir" ] && head="$head${dir##*/}${branch:+ git:($branch)} │ "
+[ -n "$dir" ] && head="$head$name${branch:+ git:($branch)} │ "
 case "$pct" in
     ''|*[!0-9]*) echo "${head}Context ░░░░░░░░░░ —"; exit 0 ;;
 esac

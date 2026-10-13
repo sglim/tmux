@@ -87,18 +87,23 @@ if [ "$CLAUDE" = 1 ]; then
     settings="$HOME/.claude/settings.json"
     mkdir -p "$HOME/.claude"
     [ -f "$settings" ] || echo '{}' > "$settings"
-    cp "$settings" "$settings.bak.$TS"
+    # settings.json 에는 env 의 키 같은 비밀값이 들어가기도 한다 — 백업도 원본 권한 그대로(-p) 둔다.
+    cp -p "$settings" "$settings.bak.$TS"
     echo "  백업 $settings → $settings.bak.$TS"
     # 이벤트마다 예전 claude-tmux-state 훅을 걷어 내고 새로 붙인다(여러 번 돌려도 하나만 남는다).
     # 상태줄은 비어 있을 때만 넣는다 — 이미 쓰는 상태줄을 덮지 않는다.
-    jq --slurpfile add "$REPO/claude/settings.json" '
+    # 결과는 남만 읽을 수 없는 임시 파일에 먼저 쓴다 — jq 가 실패해도 settings.json 이 비지 않는다.
+    tmp="$settings.tmp.$TS"
+    trap 'rm -f "$tmp"' EXIT
+    (umask 077; jq --slurpfile add "$REPO/claude/settings.json" '
         ($add[0]) as $a
         | .hooks = (reduce ($a.hooks | to_entries[]) as $e (.hooks // {};
             .[$e.key] = (((.[$e.key] // [])
                 | map(select(any(.hooks[]?; (.command // "") | test("claude-tmux-state")) | not)))
                 + $e.value)))
         | .statusLine = (.statusLine // $a.statusLine)
-    ' "$settings.bak.$TS" > "$settings"
+    ' "$settings.bak.$TS" > "$tmp") || { echo "  $settings 를 JSON 으로 읽지 못해 바꾸지 않았습니다." >&2; exit 1; }
+    cat "$tmp" > "$settings"   # 덮어쓰기(cat >)라 원래 파일의 권한·소유자가 그대로 남는다
     if [ "$(jq -r '.statusLine.command // ""' "$settings")" != "$(jq -r '.statusLine.command' "$REPO/claude/settings.json")" ]; then
         echo "  상태줄은 이미 쓰던 것이 있어 그대로 뒀습니다. 컨텍스트 % 를 보려면 statusLine.command 를"
         echo "  \$HOME/.local/bin/claude-statusline 으로 바꾸세요."
